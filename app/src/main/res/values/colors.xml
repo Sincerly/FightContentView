@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="lottery_title_color">#ff222222</color>
+    <!--表格平常颜色-->
+    <color name="trend_list_odd">#ffedecea</color>
+    <!--表格选中颜色-->
+    <color name="trend_list_even">#ffe8e4de</color>
+    <color name="trend_line_odd_bg">#bff6f5f4</color>
+    <color name="trend_ball_blue">#ff6daced</color>
+    <color name="trend_ball_red">#ffdc6161</color>
+    <color name="trend_x_ball_blue">#ff6daced</color>
+    <color name="trend_x_ball_red">#ffdc6161</color>
+    <color name="trend_x_ball_stroke">#ffe8e8e8</color>
+    <color name="trend_x_blue_text">#ff177ffc</color>
+    <color name="trend_x_red_text">#fff03d3d</color>
+    <!--顶部title背景色-->
+    <color name="trend_xtitle_bg">#000000</color>
+    <color name="trend_max_count_color">#ff5d8adf</color>
+    <color name="trend_max_lianchu_bg">#fffef8e3</color>
+    <color name="trend_max_lianchu_color">#ff80756e</color>
+    <color name="trend_max_yilou_color">#ffd76969</color>
+    <color name="trend_avg_yilou_color">#ff6fb949</color>
+    <color name="trend_avg_yilou_bg">#ffe9f1dc</color>
+    <!--表格线 白色-->
+    <color name="trend_divider">#ffeaeaea</color>
+    <color name="trend_qihao_text">#fff8f5f2</color>
+    <color name="trend_content_yilou">#ff9e9e9e</color>
+
+    <!--第一类型-->
+    <!--黄色-->
+    <color name="type1_1Color">#e6f7d70a</color>
+    <!--绿色-->
+    <color name="type1_2Color">#4bd262</color>
+    <!--蓝色-->
+    <color name="type1_3Color">#1586f1</color>
+    <!--外圆色-->
+    <color name="type1_4Color">#a6a2a2</color>
+</resources>

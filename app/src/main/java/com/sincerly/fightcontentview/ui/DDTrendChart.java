@@ -12,6 +12,7 @@ import android.support.v4.view.ViewCompat;
 import android.view.MotionEvent;
 
 
+import com.sincerly.fightcontentview.bean.ChartBean;
 import com.sincerly.fightcontentview.data.TrendData;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class DDTrendChart extends ATrendChart {
     private ISelectedChangeListener mSelectedChangeListener;
     private TreeSet<Integer> mSelectedRed = new TreeSet();
     private boolean mShowYilou = true;
-    private ArrayList<TrendData> mTrendData;
+    private ArrayList<ChartBean> mTrendData;
     private int redCount = 12;
 
     private String[] titles = new String[]{"新疆时时彩", "五星走势图", "五星组选形态", "0路号码个数", "1路号码个数", "2路号码个数"};
@@ -66,7 +67,7 @@ public class DDTrendChart extends ATrendChart {
      * @param str       种类（大乐透或者双色球）
      * @param arrayList 数据
      */
-    public void updateData(String str, ArrayList<TrendData> arrayList) {
+    public void updateData(String str, ArrayList<ChartBean> arrayList) {
         if (arrayList != null && arrayList.size() != 0) {
             if ("01".equals(str) || "50".equals(str)) {
                 this.mLotteryType = str;
@@ -81,28 +82,52 @@ public class DDTrendChart extends ATrendChart {
             this.mPath3Point.reset();
             this.mScaleRange = new float[]{0.0f, 2.0f};
             if ("01".equals(this.mLotteryType)) {
-                this.redCount = 33;
-                this.blueCount = 16;
                 for (int i = 0; i < arrayList.size(); i++) {
-                    TrendData trendData = (TrendData) arrayList.get(i);
-                    if ("row".equals(trendData.getType())) {
-                        String[] split = trendData.getBlue().split(",");
-                        for (int i2 = 0; i2 < split.length; i2++) {
-                            if (split[i2].equals("0")) {
-                                float f = (((((float) this.redCount) + 0.5f) + ((float) i2)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth);
-                                float f2 = (((float) i) + 0.5f) * ((float) this.mXItemHeight);
-                                if (i == 0) {
-                                    this.mPathPoint.moveTo(f, f2);
-                                } else {
-                                    this.mPathPoint.lineTo(f, f2);
-                                }
+                    ChartBean trendData = (ChartBean) arrayList.get(i);
+
+                    ChartBean.Data3 d=trendData.getData3();
+                    ChartBean.Data4 d2=trendData.getData4();
+                    ChartBean.Data5 d3=trendData.getData5();
+
+                    int[] aaa=new int[]{d.getC1(),d.getC2(),d.getC3(),d.getC4(),d.getC5(),d.getC6()};
+                    for (int j = 0; j <aaa.length ; j++) {
+                        if(aaa[j]==-1){
+                            float f = (((((float) this.type5ColCount) + 0.5f) + ((float) j)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth);
+                            float f2 = (((float) i) + 0.5f) * ((float) this.mXItemHeight);
+                            if (i == 0) {
+                                this.mPath3Point.moveTo(f, f2);
+                            } else {
+                                this.mPath3Point.lineTo(f, f2);
+                            }
+                        }
+                    }
+
+                    int[] aa=new int[]{d2.getD1(),d2.getD2(),d2.getD3(),d2.getD4(),d2.getD5(),d2.getD6()};
+                    for (int j = 0; j <aa.length ; j++) {
+                        if(aa[j]==-1){
+                            float f = (((((float) this.type5ColCount) + 0.5f) + ((float) j)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth);
+                            float f2 = (((float) i) + 0.5f) * ((float) this.mXItemHeight);
+                            if (i == 0) {
+                                this.mPath2Point.moveTo(f, f2);
+                            } else {
+                                this.mPath2Point.lineTo(f, f2);
+                            }
+                        }
+                    }
+
+                    int[] a=new int[]{d3.getE1(),d3.getE2(),d3.getE3(),d3.getE4(),d3.getE5(),d3.getE6()};
+                    for (int j = 0; j <a.length ; j++) {
+                        if(a[j]==-1){
+                            float f = (((((float) this.type5ColCount) + 0.5f) + ((float) j)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth);
+                            float f2 = (((float) i) + 0.5f) * ((float) this.mXItemHeight);
+                            if (i == 0) {
+                                this.mPath3Point.moveTo(f, f2);
+                            } else {
+                                this.mPath3Point.lineTo(f, f2);
                             }
                         }
                     }
                 }
-            } else if ("50".equals(this.mLotteryType)) {
-                this.redCount = 35;
-                this.blueCount = 12;
             }
             if (this.mTrendView != null) {
                 initChart(this.mTrendView.getContext(), this.mTrendView.getWidth(), this.mTrendView.getHeight(), this.mTrendView.getScale());
@@ -115,7 +140,7 @@ public class DDTrendChart extends ATrendChart {
     }
 
     public void initChart(Context context, int i, int i2, float f) {
-        if (i != 0 && i2 != 0 && this.mTrendData != null && this.mTrendData.size() >= 4) {
+        if (i != 0 && i2 != 0 && this.mTrendData != null) {
             super.initChart(context, i, i2, f);
             if (this.mTrendView != null) {
                 this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
@@ -191,19 +216,16 @@ public class DDTrendChart extends ATrendChart {
         return true;
     }
 
-    private List<String> data = new ArrayList<>();
+//    private List<String> data = new ArrayList<>();
 
     /**
      * 画y轴
      */
     public void drawY() {
-        Canvas beginRecording = mPicY.beginRecording(mYItemWidth*2, (mYItemHeight * data.size()) + mDivHeight);
+        Canvas beginRecording = mPicY.beginRecording(mYItemWidth*2, (mYItemHeight * mTrendData.size()) + mDivHeight);
         mPaint.setStyle(Paint.Style.FILL);
-        for (int i = 0; i < 500; i++) {
-            data.add("2018041501" + i);
-        }
 
-        int size = data.size();
+        int size = mTrendData.size();
         for (int i = 0; i < size; i++) {
             int i2 = i * mYItemHeight;
             this.mRect.set(0, i2, this.mYItemWidth, this.mYItemHeight + i2);
@@ -216,11 +238,11 @@ public class DDTrendChart extends ATrendChart {
             mPaint.setColor(mCYText);
 
             mPaint.setTextSize((float) mYTextSize);
-            drawText2Rect(data.get(i), beginRecording, mRect, mPaint);
+            drawText2Rect(mTrendData.get(i).getNo(), beginRecording, mRect, mPaint);
         }
 
         mPaint.setColor(Color.parseColor("#80545454"));
-        beginRecording.drawLine((float) mYItemWidth, (float) mYItemHeight, (float) mYItemWidth, (float) mYItemHeight * data.size(), this.mPaint);
+        beginRecording.drawLine((float) mYItemWidth, (float) mYItemHeight, (float) mYItemWidth, (float) mYItemHeight * mTrendData.size(), this.mPaint);
 
         for (int i = 0; i < size; i++) {
             int i2 = i * mYItemHeight;
@@ -234,7 +256,7 @@ public class DDTrendChart extends ATrendChart {
             mPaint.setColor(mCYText);
 
             mPaint.setTextSize((float) mYTextSize);
-            drawText2Rect("00011" + i, beginRecording, mRect, mPaint);
+            drawText2Rect(mTrendData.get(i).getNumber(), beginRecording, mRect, mPaint);
         }
 
         mPicY.endRecording();
@@ -558,40 +580,6 @@ public class DDTrendChart extends ATrendChart {
         /**
          * 画链接线
          */
-        for (int i1 = 0; i1 < 10; i1++) {
-            float f = (((((float) this.type1ColCount + type2ColCount) + 0.5f) ) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth*2);
-            float f2 = (((float) i1) + 0.5f) * ((float) this.mXItemHeight);
-            if (i1 == 1) {
-                this.mPathPoint.moveTo(f, f2);
-            } else {
-                if(i1%3==0){
-                    this.mPathPoint.lineTo(f, f2);
-                }
-            }
-        }
-//        for (int i1 = 0; i1 < 10; i1++) {
-//            float f = (((((float) this.type1ColCount + type2ColCount + type3ColCount) + 0.5f) + ((float) i1)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth*3);
-//            float f2 = (((float) i1) + 0.5f) * ((float) this.mXItemHeight);
-//            if (i1 == 0) {
-//                this.mPath2Point.moveTo(f, f2);
-//            } else {
-//                this.mPath2Point.lineTo(f, f2);
-//            }
-//        }
-
-        mPath2Point.moveTo(((this.type1ColCount + type2ColCount + type3ColCount)+0.5f)*mXItemWidth+mXItemWidth*3+mDivWidth*3,(((float) 0) + 0.5f) * ((float) this.mXItemHeight));
-        mPath2Point.lineTo(((this.type1ColCount + type2ColCount + type3ColCount)+0.5f)*mXItemWidth+mXItemWidth*4+mDivWidth*3,(((float) 1) + 0.5f) * ((float) this.mXItemHeight));
-
-
-        for (int i1 = 0; i1 < 10; i1++) {
-            float f = (((((float) this.type1ColCount + type2ColCount + type3ColCount+type4ColCount) + 0.5f) + ((float) i1)) * ((float) this.mXItemWidth)) + ((float) this.mDivWidth*4);
-            float f2 = (((float) i1) + 0.5f) * ((float) this.mXItemHeight);
-            if (i1 == 0) {
-                this.mPath3Point.moveTo(f, f2);
-            } else {
-                this.mPath3Point.lineTo(f, f2);
-            }
-        }
         this.mPaint.setStyle(Style.STROKE);
         this.mPaint.setStrokeCap(Paint.Cap.ROUND);
         this.mPaint.setStrokeWidth(10);
@@ -617,31 +605,74 @@ public class DDTrendChart extends ATrendChart {
             for (int j = 0; j < type1ColCount; j++) {
                 int r = (int) (Math.random() * +(1 + j));
                 this.mRect.set(this.mXItemWidth * j, height, (j + 1) * this.mXItemWidth, this.mXItemHeight + height);
-                if (j + r % 2 == 0) {
+
+                int[] type = mTrendData.get(p).getData1().getType();
+
+                if (type[j] == 1) {
+                    this.mPaint.setStyle(Style.STROKE);
+                    this.mPaint.setColor(this.type1_4Color);//   外圆色
+                    beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
+                    //beginRecording.drawArc(rectf, 0, 360, false, mPaint);
+                    this.mPaint.setColor(this.mCDiv);
+                } else if (type[j] == 2) {
+                    this.mPaint.setColor(this.type1_3Color);//蓝色
+                    beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
+                    this.mPaint.setColor(-1);
+                } else if (type[j] == 3) {
                     this.mPaint.setColor(this.type1_1Color);//黄色
                     beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
                     this.mPaint.setColor(-1);
-                } else if (r % 3 == 0) {
+
+                } else if (type[j] == 4){
+                    this.mPaint.setColor(this.redCount);//红色
+                    beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
+                    this.mPaint.setColor(-1);
+                }else if(type[j]==5){
                     this.mPaint.setColor(this.type1_2Color);//绿色
                     beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
                     this.mPaint.setColor(-1);
-                } else {
-                    if (i % 3 == 0) {
-//                        mPaint.setStyle(Style.STROKE);
-                        this.mPaint.setColor(this.type1_3Color);//蓝色
-                        beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
-                        this.mPaint.setColor(-1);
-                    } else {
-                        this.mPaint.setStyle(Style.STROKE);
-                        this.mPaint.setColor(this.type1_4Color);//   外圆色
-                        beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
-                        //beginRecording.drawArc(rectf, 0, 360, false, mPaint);
-                        this.mPaint.setColor(this.mCDiv);
-                    }
-                    this.mPaint.setColor(this.mCYilou);
+                }else{
+//                    this.mPaint.setColor(this.mCYilou);
                 }
                 this.mPaint.setStyle(Style.FILL);
-                drawText2Rect(j + "", beginRecording, this.mRect, this.mPaint);
+
+                String str="";
+                if(type[j]==-1){
+                    int dd=j;
+                    str=""+dd;
+                }else{
+                    if(j==0){
+                       str=""+ mTrendData.get(p).getData1().getA0();
+                    }
+                    if(j==1){
+                        str=""+ mTrendData.get(p).getData1().getA1();
+                    }
+                    if(j==2){
+                        str=""+ mTrendData.get(p).getData1().getA2();
+                    }
+                    if(j==3){
+                        str=""+ mTrendData.get(p).getData1().getA3();
+                    }
+                    if(j==4){
+                        str=""+ mTrendData.get(p).getData1().getA4();
+                    }
+                    if(j==5){
+                        str=""+ mTrendData.get(p).getData1().getA5();
+                    }
+                    if(j==6){
+                        str=""+ mTrendData.get(p).getData1().getA6();
+                    }
+                    if(j==7){
+                        str=""+ mTrendData.get(p).getData1().getA7();
+                    }
+                    if(j==8){
+                        str=""+ mTrendData.get(p).getData1().getA8();
+                    }
+                    if(j==9){
+                        str=""+ mTrendData.get(p).getData1().getA9();
+                    }
+                }
+                drawText2Rect(str + "", beginRecording, this.mRect, this.mPaint);
             }
 
             mPaint.setTextSize((float) this.mLcTextSize);

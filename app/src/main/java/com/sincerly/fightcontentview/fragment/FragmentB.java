@@ -186,13 +186,6 @@ public class FragmentB extends Fragment {
      */
     private void replace() {
         parseToChartBean();
-        List<DataSource> list = new ArrayList<>();
-        for (int i = sources.size() - 1; i >= 0; i--) {
-            DataSource item = sources.get(i);
-            list.add(item);
-        }
-        sources.clear();
-        sources.addAll(list);
     }
 
     /**
@@ -345,6 +338,17 @@ public class FragmentB extends Fragment {
             charts.add(c);
             chartBean = c;
         }
+
+
+        List<ChartBean> list = new ArrayList<>();
+        for (int i = charts.size() - 1; i >= 0; i--) {
+            ChartBean bean = charts.get(i);
+            list.add(bean);
+        }
+        charts.clear();
+        charts.addAll(list);
+
+        mHandler.sendMessage(mHandler.obtainMessage(120, charts));
     }
 
 

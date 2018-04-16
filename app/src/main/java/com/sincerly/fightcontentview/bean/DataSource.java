@@ -7,12 +7,21 @@ package com.sincerly.fightcontentview.bean;
 public class DataSource {
     private int line;
     private String no;
+    private String longNo;
     private int num1;
     private int num2;
     private int num3;
     private int num4;
     private int num5;
 
+
+    public String getLongNo() {
+        return longNo;
+    }
+
+    public void setLongNo(String longNo) {
+        this.longNo = longNo;
+    }
 
     public int getLine() {
         return line;

@@ -11,10 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sincerly.fightcontentview.R;
 import com.sincerly.fightcontentview.api.RetrofitApi;
 import com.sincerly.fightcontentview.bean.ChartBean;
 import com.sincerly.fightcontentview.bean.DataSource;
+import com.sincerly.fightcontentview.bean.ResponseBean;
+import com.sincerly.fightcontentview.bean.ResponseBean3;
 import com.sincerly.fightcontentview.config.AppConfig;
 import com.sincerly.fightcontentview.lottery.LottoTrendActivity;
 import com.sincerly.fightcontentview.ui.DDTrendChart;
@@ -29,6 +33,10 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,21 +80,21 @@ public class FragmentA extends Fragment {
             super.handleMessage(paramMessage);
             switch (paramMessage.what) {
                 case 0x01:
-                    ArrayList<ChartBean> c=new ArrayList<>();
-                    c.addAll(charts);
-                    c.add(charts.get(0));
-                    mTrendView.setNowX(0f);
-                    mTrendView.setNowY(0f);
-                    mTrendChart.updateData("01", c);
+                    refresh();
                     mHandler.sendEmptyMessageDelayed(0x01, 60000);
                     break;
                 case 0x02:
-                    ArrayList<ChartBean> c2=new ArrayList<>();
-                    c2.addAll( (ArrayList) paramMessage.obj);
+                    ArrayList<ChartBean> c2 = new ArrayList<>();
+                    c2.addAll((ArrayList) paramMessage.obj);
                     mTrendView.setNowX(0f);
                     mTrendView.setNowY(0f);
                     mTrendChart.updateData("01", c2);
                     mHandler.sendEmptyMessageDelayed(0x01, 60000);
+                    break;
+                case 0x03:
+                    mTrendView.setNowX(0f);
+                    mTrendView.setNowY(0f);
+                    mTrendChart.updateData("01", (ArrayList<ChartBean>) charts);
                     break;
                 default:
                     break;
@@ -95,22 +103,46 @@ public class FragmentA extends Fragment {
     };
 
     private void refresh() {
-        String url = "http://23.252.161.83:8666/shishicai/ajax?ajaxhandler=getcqsscawarddata&t=0.5901237616961141";
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void run() {
+                HttpURLConnection connection = null;
+                BufferedReader reader = null;
+                try {
+                    URL url = new URL("http://23.252.161.83:8666/shishicai/ajax?ajaxhandler=getcqsscawarddata&t=0.5901237616961141");
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setConnectTimeout(8000);
+                    connection.setReadTimeout(8000);
+                    connection.connect();
+                    InputStream in = connection.getInputStream();
+                    //下面对获取到的输入流进行读取
+                    reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    Type type = new TypeToken<ResponseBean>() {
+                    }.getType();
+                    ResponseBean g = new Gson().fromJson(response.toString(), type);
+                    refershItem(g);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (connection != null) {
+                        connection.disconnect();
+                    }
+                }
             }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                InputStream inputStream = response.body().byteStream();
-                Log.e("tag", "5");
-            }
-        });
+        }).start();
     }
 
     private void getText() {
@@ -179,6 +211,7 @@ public class FragmentA extends Fragment {
                 String[] a = tempString.split(" ");
                 DataSource d = new DataSource();
                 d.setNo(a[0]);
+                d.setLongNo(a[0]);
                 d.setLine(line);
                 d.setNum1(Integer.parseInt(a[1]));
                 d.setNum2(Integer.parseInt(a[2]));
@@ -186,7 +219,6 @@ public class FragmentA extends Fragment {
                 d.setNum4(Integer.parseInt(a[4]));
                 d.setNum5(Integer.parseInt(a[5]));
                 sources.add(d);
-                System.out.println("line " + line + ": " + tempString);
                 line++;
             }
             reader.close();
@@ -218,7 +250,13 @@ public class FragmentA extends Fragment {
             int n4 = item.getNum4();
             int n5 = item.getNum5();
             c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
-            c.setNo(item.getNo());//期号
+            String no = item.getNo();
+            if (no != null) {
+                c.setNo(no.substring(no.length() - 3, no.length()));//期号
+            } else {
+                c.setNo("期号缺失");
+            }
+            c.setLongNo(item.getLongNo());
             /**
              * 处理第一个数据
              */
@@ -257,7 +295,7 @@ public class FragmentA extends Fragment {
              * 处理第二个数据
              */
 
-            chartCurrentBean=data1;
+            chartCurrentBean = data1;
 
             ChartBean.Data2 data2 = new ChartBean.Data2();
             data2.setType(new int[6]);
@@ -656,6 +694,7 @@ public class FragmentA extends Fragment {
      * @param n5
      */
     private ChartBean.Data1 chartCurrentBean;
+
     private void calcData2(ChartBean.Data2 before, ChartBean.Data2 data1, int n1, int n2, int n3, int n4, int n5) {
         //所有数字选中的数量   0 1 2 3 4 5 6 7 8 9
         int[] type = chartCurrentBean.getType();
@@ -694,21 +733,21 @@ public class FragmentA extends Fragment {
         int t = -1;
         //组120
         if (ll.size() == 5) {
-            data1.setB1((b+1));
-            data1.setB2((b2+1));
-            data1.setB3((b3+1));
-            data1.setB4((b4+1));
-            data1.setB5((b5+1));
+            data1.setB1((b + 1));
+            data1.setB2((b2 + 1));
+            data1.setB3((b3 + 1));
+            data1.setB4((b4 + 1));
+            data1.setB5((b5 + 1));
             data1.setB6(-1);
         }
         //组60
         if (ll.size() == 4) {
-            data1.setB1((b+1));
-            data1.setB2((b2+1));
-            data1.setB3((b3+1));
-            data1.setB4((b4+1));
+            data1.setB1((b + 1));
+            data1.setB2((b2 + 1));
+            data1.setB3((b3 + 1));
+            data1.setB4((b4 + 1));
             data1.setB5(-1);
-            data1.setB6((b6+1));
+            data1.setB6((b6 + 1));
         }
 
         //组30与组20
@@ -718,19 +757,19 @@ public class FragmentA extends Fragment {
                 max = Math.max(ll.get(i), max);
             }
             if (max == 3) {//组20   3个一样
-                data1.setB1((b+1));
-                data1.setB2((b2+1));
+                data1.setB1((b + 1));
+                data1.setB2((b2 + 1));
                 data1.setB3(-1);
-                data1.setB4((b4+1));
-                data1.setB5((b5+1));
-                data1.setB6((b6+1));
+                data1.setB4((b4 + 1));
+                data1.setB5((b5 + 1));
+                data1.setB6((b6 + 1));
             } else {//组30  2个一样 2个不一样
-                data1.setB1((b+1));
-                data1.setB2((b2+1));
-                data1.setB3((b3+1));
+                data1.setB1((b + 1));
+                data1.setB2((b2 + 1));
+                data1.setB3((b3 + 1));
                 data1.setB4(-1);
-                data1.setB5((b5+1));
-                data1.setB6((b6+1));
+                data1.setB5((b5 + 1));
+                data1.setB6((b6 + 1));
             }
         }
         if (ll.size() == 2) {
@@ -740,18 +779,18 @@ public class FragmentA extends Fragment {
             }
             if (max == 4) {//组5   4个一样
                 data1.setB1(-1);
-                data1.setB2((b2+1));
-                data1.setB3((b3+1));
-                data1.setB4((b4+1));
-                data1.setB5((b5+1));
-                data1.setB6((b6+1));
+                data1.setB2((b2 + 1));
+                data1.setB3((b3 + 1));
+                data1.setB4((b4 + 1));
+                data1.setB5((b5 + 1));
+                data1.setB6((b6 + 1));
             } else {//组10  2个一样 3个一样
-                data1.setB1((b+1));
+                data1.setB1((b + 1));
                 data1.setB2(-1);
-                data1.setB3((b3+1));
-                data1.setB4((b4+1));
-                data1.setB5((b5+1));
-                data1.setB6((b6+1));
+                data1.setB3((b3 + 1));
+                data1.setB4((b4 + 1));
+                data1.setB5((b5 + 1));
+                data1.setB6((b6 + 1));
             }
         }
     }
@@ -1129,5 +1168,148 @@ public class FragmentA extends Fragment {
         }
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    // 刷新
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * time : 1523886999887
+     * current : {"periodNumber":95,"periodDate":"20180416095","awardTime":"2018-04-16 21:50:00","awardNumbers":"4,9,7,0,3"}
+     * next : {"periodNumber":96,"periodDate":"20180416096","awardTime":"2018-04-16 22:00:00","awardTimeInterval":200000,"delayTimeInterval":15}
+     * awardState : false
+     */
+
+    private void refershItem(ResponseBean bean) {
+        if (bean == null) {
+            return;
+        }
+        if (charts == null) {
+            return;
+        }
+        if (charts.size() < 0) {
+            return;
+        }
+
+        ResponseBean.CurrentBean currentBean = bean.getCurrent();
+        if (currentBean.getAwardNumbers() == null) {
+            return;
+        }
+
+        String[] numbers = currentBean.getAwardNumbers().split(",");
+        if (numbers.length < 5) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+
+//        String =1
+        int n1 = Integer.parseInt(numbers[0]);
+        int n2 = Integer.parseInt(numbers[1]);
+        int n3 = Integer.parseInt(numbers[2]);
+        int n4 = Integer.parseInt(numbers[3]);
+        int n5 = Integer.parseInt(numbers[4]);
+
+        ChartBean c = new ChartBean();
+        c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
+        String no = currentBean.getPeriodDate();
+
+        if (!charts.get(0).getLongNo().equals(no)) {//与当前不符合
+            return;
+        }
+        if (no != null) {
+            c.setNo(no.substring(no.length() - 3, no.length()));//期号
+        } else {
+            c.setNo("期号缺失");
+        }
+        /**
+         * 处理第一个数据
+         */
+        ChartBean.Data1 data1 = new ChartBean.Data1();
+        data1.setType(new int[10]);
+
+        data1.setA0(parseValue(chartBean.getData1().getA0()));
+        data1.setA1(parseValue(chartBean.getData1().getA1()));
+        data1.setA2(parseValue(chartBean.getData1().getA2()));
+        data1.setA3(parseValue(chartBean.getData1().getA3()));
+        data1.setA4(parseValue(chartBean.getData1().getA4()));
+        data1.setA5(parseValue(chartBean.getData1().getA5()));
+        data1.setA6(parseValue(chartBean.getData1().getA6()));
+        data1.setA7(parseValue(chartBean.getData1().getA7()));
+        data1.setA8(parseValue(chartBean.getData1().getA8()));
+        data1.setA9(parseValue(chartBean.getData1().getA9()));
+        c.setData1(data1);
+        resetData1Flag();
+        calcData1(chartBean.getData1(), data1, n1, n2, n3, n4, n5);
+        /**
+         * 处理第二个数据
+         */
+
+        chartCurrentBean = data1;
+        ChartBean.Data2 data2 = new ChartBean.Data2();
+        data2.setType(new int[6]);
+        //处理上一个
+        data2.setB1(parseValue(chartBean.getData2().getB1()));
+        data2.setB2(parseValue(chartBean.getData2().getB2()));
+        data2.setB3(parseValue(chartBean.getData2().getB3()));
+        data2.setB4(parseValue(chartBean.getData2().getB4()));
+        data2.setB5(parseValue(chartBean.getData2().getB5()));
+        data2.setB6(parseValue(chartBean.getData2().getB6()));
+        c.setData2(data2);
+        resetData2Flag();
+        calcData2(chartBean.getData2(), data2, n1, n2, n3, n4, n5);
+
+        /**
+         * 处理第三个数据
+         */
+        ChartBean.Data3 data3 = new ChartBean.Data3();
+        //处理上一个
+        data3.setC1(parseValue(chartBean.getData3().getC1()));
+        data3.setC2(parseValue(chartBean.getData3().getC2()));
+        data3.setC3(parseValue(chartBean.getData3().getC3()));
+        data3.setC4(parseValue(chartBean.getData3().getC4()));
+        data3.setC5(parseValue(chartBean.getData3().getC5()));
+        data3.setC6(parseValue(chartBean.getData3().getC6()));
+        c.setData3(data3);
+        calcData3(chartBean.getData3(), data3, n1, n2, n3, n4, n5);
+
+        /**
+         * 处理第四个数据
+         */
+        ChartBean.Data4 data4 = new ChartBean.Data4();
+        //处理上一个
+        data4.setD1(parseValue(chartBean.getData4().getD1()));
+        data4.setD2(parseValue(chartBean.getData4().getD2()));
+        data4.setD3(parseValue(chartBean.getData4().getD3()));
+        data4.setD4(parseValue(chartBean.getData4().getD4()));
+        data4.setD5(parseValue(chartBean.getData4().getD5()));
+        data4.setD6(parseValue(chartBean.getData4().getD6()));
+        c.setData4(data4);
+        calcData4(chartBean.getData4(), data4, n1, n2, n3, n4, n5);
+        /**
+         * 处理第五个数据
+         */
+        ChartBean.Data5 data5 = new ChartBean.Data5();
+        data5.setE1(1);
+        data5.setE2(1);
+        data5.setE3(1);
+        data5.setE4(1);
+        data5.setE5(1);
+        data5.setE6(1);
+        c.setData5(data5);
+        //处理上一个
+        data5.setE1(parseValue(chartBean.getData5().getE1()));
+        data5.setE2(parseValue(chartBean.getData5().getE2()));
+        data5.setE3(parseValue(chartBean.getData5().getE3()));
+        data5.setE4(parseValue(chartBean.getData5().getE4()));
+        data5.setE5(parseValue(chartBean.getData5().getE5()));
+        data5.setE6(parseValue(chartBean.getData5().getE6()));
+        c.setData5(data5);
+        calcData5(chartBean.getData5(), data5, n1, n2, n3, n4, n5);
+
+        charts.add(0, c);
+        chartBean = c;
+
+        mHandler.sendEmptyMessage(0x03);
+    }
 }
 

@@ -146,7 +146,9 @@ public class DDTrendChart extends ATrendChart {
 		if (i != 0 && i2 != 0 && this.mTrendData != null) {
 			super.initChart(context, i, i2, f);
 			if (this.mTrendView != null) {
-				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
+//				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
+				this.mTrendView.setNowY((float) 0);
+				this.mTrendView.setNowX((float) 0);
 			}
 		}
 	}

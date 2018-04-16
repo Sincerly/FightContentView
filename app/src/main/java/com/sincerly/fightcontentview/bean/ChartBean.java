@@ -13,6 +13,16 @@ public class ChartBean {
     private Data4 data4;
     private Data5 data5;
 
+    private String longNo;
+
+    public String getLongNo() {
+        return longNo;
+    }
+
+    public void setLongNo(String longNo) {
+        this.longNo = longNo;
+    }
+
     public String getNo() {
         return no;
     }

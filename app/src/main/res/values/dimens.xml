@@ -8,7 +8,7 @@
     <dimen name="trend_x_item_name_width">44dp</dimen>
     <!--单元格高度-->
     <dimen name="trend_x_item_height">33dp</dimen>
-    <dimen name="trend_y_item_width">60dp</dimen>
+    <dimen name="trend_y_item_width">40dp</dimen>
     <dimen name="trend_y_item_height">33dp</dimen>
     <dimen name="trend_x_text_size">14dp</dimen>
     <dimen name="trend_y_text_size">12dp</dimen>

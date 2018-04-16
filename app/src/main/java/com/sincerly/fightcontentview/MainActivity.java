@@ -10,6 +10,7 @@ import com.sincerly.fightcontentview.adapter.ViewPagerFragmentAdapter;
 import com.sincerly.fightcontentview.fragment.FragmentA;
 import com.sincerly.fightcontentview.fragment.FragmentB;
 import com.sincerly.fightcontentview.fragment.FragmentC;
+import com.sincerly.fightcontentview.ui.TViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = findViewById(R.id.tabLayout);
 
-        ViewPager v = findViewById(R.id.viewPager);
+        TViewPager v = findViewById(R.id.viewPager);
         List<Fragment> list = new ArrayList<>();
         list.add(new FragmentA());
         list.add(new FragmentB());

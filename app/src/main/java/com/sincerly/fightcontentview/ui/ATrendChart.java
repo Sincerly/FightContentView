@@ -151,6 +151,7 @@ public abstract class ATrendChart implements ITrendChart {
 //            drawXBottom();
             drawContent();
 //            drawLeftBottom();
+
             this.mInitOk = true;
         }
     }

@@ -10,6 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -63,10 +67,14 @@ public class FragmentB extends Fragment {
 	private LottoTrendView mTrendView;
 	private DDTrendChart mTrendChart;
 	private final OkHttpClient client = new OkHttpClient();
+	private boolean isFirst=true;
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_a, container, false);
+//		parent = view.findViewById(R.id.loadingView);
+//		image = view.findViewById(R.id.image);
+		start();
 		initChart(view);
 		getText();
 		return view;
@@ -78,28 +86,48 @@ public class FragmentB extends Fragment {
 		this.mTrendView.setChart(this.mTrendChart);
 		this.mTrendChart.setShowYilou(true);
 		this.mTrendChart.setDrawLine(true);
+		this.mTrendView.setFinish(new LottoTrendView.onFinish() {
+			@Override
+			public void end() {
+				Log.e("tag", "end");
+				stop();
+			}
+		});
 	}
 
-    private Handler mHandler = new Handler() {
+//	@Override
+//	public void setUserVisibleHint(boolean isVisibleToUser) {
+//		super.setUserVisibleHint(isVisibleToUser);
+//		Log.e("tag",isVisibleToUser+"B:");
+//		if(isVisibleToUser&&isFirst){
+//			getText();
+//		}
+//	}
+
+	private Handler mHandler = new Handler() {
         public void handleMessage(Message paramMessage) {
             super.handleMessage(paramMessage);
             switch (paramMessage.what) {
                 case 0x01:
-                    refresh();
-                    mHandler.sendEmptyMessageDelayed(0x01, 60000);
+					if(getUserVisibleHint()){
+						refresh();
+					}else{
+					}
+                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
                     break;
                 case 0x02:
                     ArrayList<ChartBean> c2 = new ArrayList<>();
                     c2.addAll((ArrayList) paramMessage.obj);
                     mTrendView.setNowX(0f);
                     mTrendView.setNowY(0f);
-                    mTrendChart.updateData("01", c2);
-                    mHandler.sendEmptyMessageDelayed(0x01, 60000);
+                    mTrendChart.updateData("新疆时时彩","01", c2);
+					isFirst=false;
+                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
                     break;
                 case 0x03:
                     mTrendView.setNowX(0f);
                     mTrendView.setNowY(0f);
-                    mTrendChart.updateData("01", (ArrayList<ChartBean>) charts);
+                    mTrendChart.updateData("新疆时时彩","01", (ArrayList<ChartBean>) charts);
                     break;
                 default:
                     break;
@@ -109,47 +137,49 @@ public class FragmentB extends Fragment {
 
 
     private void refresh() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection connection = null;
-                BufferedReader reader = null;
-                try {
-                    URL url = new URL("http://23.252.161.83:8666/xjssc/ajax?ajaxhandler=getawarddata&t=0.5901237616961141");
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setConnectTimeout(8000);
-                    connection.setReadTimeout(8000);
-					connection.connect();
-					InputStream in = connection.getInputStream();
-                    //下面对获取到的输入流进行读取
-                    reader = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-
-                    Type type = new TypeToken<ResponseBean2>() {
-                    }.getType();
-                    ResponseBean2 g = new Gson().fromJson(response.toString(), type);
-                    refershItem(g);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (connection != null) {
-                        connection.disconnect();
-                    }
-                }
-            }
-        }).start();
+		getText();
+//		Log.e("tag","FragmentB");
+//		new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                HttpURLConnection connection = null;
+//                BufferedReader reader = null;
+//                try {
+//                    URL url = new URL("http://23.252.161.83:8666/xjssc/ajax?ajaxhandler=getawarddata&t=0.5901237616961141");
+//                    connection = (HttpURLConnection) url.openConnection();
+//                    connection.setRequestMethod("GET");
+//                    connection.setConnectTimeout(8000);
+//                    connection.setReadTimeout(8000);
+//					connection.connect();
+//					InputStream in = connection.getInputStream();
+//                    //下面对获取到的输入流进行读取
+//                    reader = new BufferedReader(new InputStreamReader(in));
+//                    StringBuilder response = new StringBuilder();
+//                    String line;
+//                    while ((line = reader.readLine()) != null) {
+//                        response.append(line);
+//                    }
+//
+//                    Type type = new TypeToken<ResponseBean2>() {
+//                    }.getType();
+//                    ResponseBean2 g = new Gson().fromJson(response.toString(), type);
+//                    refershItem(g);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    if (reader != null) {
+//                        try {
+//                            reader.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                    if (connection != null) {
+//                        connection.disconnect();
+//                    }
+//                }
+//            }
+//        }).start();
 	}
 
 	private void getText() {
@@ -170,9 +200,10 @@ public class FragmentB extends Fragment {
 					InputStream inputStream = is.byteStream();
 
 					File file = new File(AppConfig.PATH, "text2.txt");
-					if (!file.exists()) {
-						file.createNewFile();
+					if (file.exists()) {
+						file.delete();
 					}
+					file.createNewFile();
 					FileOutputStream fos = new FileOutputStream(file);
 					BufferedInputStream bis = new BufferedInputStream(inputStream);
 					byte[] buffer = new byte[1024];
@@ -239,7 +270,22 @@ public class FragmentB extends Fragment {
 	 * 正序排序
 	 */
 	private void replace() {
-		parseToChartBean();
+		if (isFirst) {
+			parseToChartBean();
+		}else{
+			if(sources.size()>0){
+				DataSource s=sources.get(sources.size()-1);
+				String sLongNo=s.getLongNo();
+				String longNo=chartBean.getLongNo();
+				if(sLongNo!=null&&!sLongNo.equals(longNo)){//最新一条与当前期号不一样
+					int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
+					refershItem(sLongNo,n);
+				}else{
+					int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
+					refershItem(sLongNo,n);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1185,132 +1231,137 @@ public class FragmentB extends Fragment {
      * awardState : false
      */
 
-    private void refershItem(ResponseBean2 bean) {
-		if(bean==null){
+	private void refershItem(String n,int[] number ) {
+		if (charts == null) {
 			return;
 		}
-        if (charts == null) {
-            return;
-        }
-        if (charts.size() < 0) {
-            return;
-        }
-        ResponseBean2.CurrentBean currentBean = bean.getCurrent();
-        if (currentBean.getAwardNumbers() == null) {
-            return;
-        }
-        String[] numbers = currentBean.getAwardNumbers().split(",");
-        if (numbers.length < 5) {
-            return;
-        }
-//        String =1
-        int n1 = Integer.parseInt(numbers[0]);
-        int n2 = Integer.parseInt(numbers[1]);
-        int n3 = Integer.parseInt(numbers[2]);
-        int n4 = Integer.parseInt(numbers[3]);
-        int n5 = Integer.parseInt(numbers[4]);
+		if (charts.size() < 0) {
+			return;
+		}
+		ChartBean c = new ChartBean();
+		int n1=number[0];
+		int n2=number[1];
+		int n3=number[2];
+		int n4=number[3];
+		int n5=number[4];
+		c.setNumber(n1 + "" + n2 + "" + n3+ "" + n4 + "" +n5 + "");
+		String no = n;
+		if (!charts.get(0).getLongNo().equals(no)) {//与当前不符合
+			return;
+		}
+		if (no != null) {
+			c.setNo(no.substring(no.length() - 3, no.length()));//期号
+		} else {
+			c.setNo("期号缺失");
+		}
+		c.setLongNo(n);
+		/**
+		 * 处理第一个数据
+		 */
+		ChartBean.Data1 data1 = new ChartBean.Data1();
+		data1.setType(new int[10]);
 
-        ChartBean c = new ChartBean();
-        c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
-        String no = currentBean.getPeriod();
+		data1.setA0(parseValue(chartBean.getData1().getA0()));
+		data1.setA1(parseValue(chartBean.getData1().getA1()));
+		data1.setA2(parseValue(chartBean.getData1().getA2()));
+		data1.setA3(parseValue(chartBean.getData1().getA3()));
+		data1.setA4(parseValue(chartBean.getData1().getA4()));
+		data1.setA5(parseValue(chartBean.getData1().getA5()));
+		data1.setA6(parseValue(chartBean.getData1().getA6()));
+		data1.setA7(parseValue(chartBean.getData1().getA7()));
+		data1.setA8(parseValue(chartBean.getData1().getA8()));
+		data1.setA9(parseValue(chartBean.getData1().getA9()));
+		c.setData1(data1);
+		resetData1Flag();
+		calcData1(chartBean.getData1(), data1, n1, n2, n3, n4, n5);
+		/**
+		 * 处理第二个数据
+		 */
 
-        if(!charts.get(0).getLongNo().equals(no)){//与当前不符合
-            return;
-        }
-        if (no != null) {
-            c.setNo(no.substring(no.length() - 3, no.length()));//期号
-        } else {
-            c.setNo("期号缺失");
-        }
-        /**
-         * 处理第一个数据
-         */
-        ChartBean.Data1 data1 = new ChartBean.Data1();
-        data1.setType(new int[10]);
+		chartCurrentBean = data1;
+		ChartBean.Data2 data2 = new ChartBean.Data2();
+		data2.setType(new int[6]);
+		//处理上一个
+		data2.setB1(parseValue(chartBean.getData2().getB1()));
+		data2.setB2(parseValue(chartBean.getData2().getB2()));
+		data2.setB3(parseValue(chartBean.getData2().getB3()));
+		data2.setB4(parseValue(chartBean.getData2().getB4()));
+		data2.setB5(parseValue(chartBean.getData2().getB5()));
+		data2.setB6(parseValue(chartBean.getData2().getB6()));
+		c.setData2(data2);
+		resetData2Flag();
+		calcData2(chartBean.getData2(), data2, n1, n2, n3, n4, n5);
 
-        data1.setA0(parseValue(chartBean.getData1().getA0()));
-        data1.setA1(parseValue(chartBean.getData1().getA1()));
-        data1.setA2(parseValue(chartBean.getData1().getA2()));
-        data1.setA3(parseValue(chartBean.getData1().getA3()));
-        data1.setA4(parseValue(chartBean.getData1().getA4()));
-        data1.setA5(parseValue(chartBean.getData1().getA5()));
-        data1.setA6(parseValue(chartBean.getData1().getA6()));
-        data1.setA7(parseValue(chartBean.getData1().getA7()));
-        data1.setA8(parseValue(chartBean.getData1().getA8()));
-        data1.setA9(parseValue(chartBean.getData1().getA9()));
-        c.setData1(data1);
-        resetData1Flag();
-        calcData1(chartBean.getData1(), data1, n1, n2, n3, n4, n5);
-        /**
-         * 处理第二个数据
-         */
+		/**
+		 * 处理第三个数据
+		 */
+		ChartBean.Data3 data3 = new ChartBean.Data3();
+		//处理上一个
+		data3.setC1(parseValue(chartBean.getData3().getC1()));
+		data3.setC2(parseValue(chartBean.getData3().getC2()));
+		data3.setC3(parseValue(chartBean.getData3().getC3()));
+		data3.setC4(parseValue(chartBean.getData3().getC4()));
+		data3.setC5(parseValue(chartBean.getData3().getC5()));
+		data3.setC6(parseValue(chartBean.getData3().getC6()));
+		c.setData3(data3);
+		calcData3(chartBean.getData3(), data3, n1, n2, n3, n4, n5);
 
-        chartCurrentBean = data1;
-        ChartBean.Data2 data2 = new ChartBean.Data2();
-        data2.setType(new int[6]);
-        //处理上一个
-        data2.setB1(parseValue(chartBean.getData2().getB1()));
-        data2.setB2(parseValue(chartBean.getData2().getB2()));
-        data2.setB3(parseValue(chartBean.getData2().getB3()));
-        data2.setB4(parseValue(chartBean.getData2().getB4()));
-        data2.setB5(parseValue(chartBean.getData2().getB5()));
-        data2.setB6(parseValue(chartBean.getData2().getB6()));
-        c.setData2(data2);
-        resetData2Flag();
-        calcData2(chartBean.getData2(), data2, n1, n2, n3, n4, n5);
+		/**
+		 * 处理第四个数据
+		 */
+		ChartBean.Data4 data4 = new ChartBean.Data4();
+		//处理上一个
+		data4.setD1(parseValue(chartBean.getData4().getD1()));
+		data4.setD2(parseValue(chartBean.getData4().getD2()));
+		data4.setD3(parseValue(chartBean.getData4().getD3()));
+		data4.setD4(parseValue(chartBean.getData4().getD4()));
+		data4.setD5(parseValue(chartBean.getData4().getD5()));
+		data4.setD6(parseValue(chartBean.getData4().getD6()));
+		c.setData4(data4);
+		calcData4(chartBean.getData4(), data4, n1, n2, n3, n4, n5);
+		/**
+		 * 处理第五个数据
+		 */
+		ChartBean.Data5 data5 = new ChartBean.Data5();
+		data5.setE1(1);
+		data5.setE2(1);
+		data5.setE3(1);
+		data5.setE4(1);
+		data5.setE5(1);
+		data5.setE6(1);
+		c.setData5(data5);
+		//处理上一个
+		data5.setE1(parseValue(chartBean.getData5().getE1()));
+		data5.setE2(parseValue(chartBean.getData5().getE2()));
+		data5.setE3(parseValue(chartBean.getData5().getE3()));
+		data5.setE4(parseValue(chartBean.getData5().getE4()));
+		data5.setE5(parseValue(chartBean.getData5().getE5()));
+		data5.setE6(parseValue(chartBean.getData5().getE6()));
+		c.setData5(data5);
+		calcData5(chartBean.getData5(), data5, n1, n2, n3, n4, n5);
 
-        /**
-         * 处理第三个数据
-         */
-        ChartBean.Data3 data3 = new ChartBean.Data3();
-        //处理上一个
-        data3.setC1(parseValue(chartBean.getData3().getC1()));
-        data3.setC2(parseValue(chartBean.getData3().getC2()));
-        data3.setC3(parseValue(chartBean.getData3().getC3()));
-        data3.setC4(parseValue(chartBean.getData3().getC4()));
-        data3.setC5(parseValue(chartBean.getData3().getC5()));
-        data3.setC6(parseValue(chartBean.getData3().getC6()));
-        c.setData3(data3);
-        calcData3(chartBean.getData3(), data3, n1, n2, n3, n4, n5);
+		charts.add(0, c);
+		chartBean = c;
 
-        /**
-         * 处理第四个数据
-         */
-        ChartBean.Data4 data4 = new ChartBean.Data4();
-        //处理上一个
-        data4.setD1(parseValue(chartBean.getData4().getD1()));
-        data4.setD2(parseValue(chartBean.getData4().getD2()));
-        data4.setD3(parseValue(chartBean.getData4().getD3()));
-        data4.setD4(parseValue(chartBean.getData4().getD4()));
-        data4.setD5(parseValue(chartBean.getData4().getD5()));
-        data4.setD6(parseValue(chartBean.getData4().getD6()));
-        c.setData4(data4);
-        calcData4(chartBean.getData4(), data4, n1, n2, n3, n4, n5);
-        /**
-         * 处理第五个数据
-         */
-        ChartBean.Data5 data5 = new ChartBean.Data5();
-        data5.setE1(1);
-        data5.setE2(1);
-        data5.setE3(1);
-        data5.setE4(1);
-        data5.setE5(1);
-        data5.setE6(1);
-        c.setData5(data5);
-        //处理上一个
-        data5.setE1(parseValue(chartBean.getData5().getE1()));
-        data5.setE2(parseValue(chartBean.getData5().getE2()));
-        data5.setE3(parseValue(chartBean.getData5().getE3()));
-        data5.setE4(parseValue(chartBean.getData5().getE4()));
-        data5.setE5(parseValue(chartBean.getData5().getE5()));
-        data5.setE6(parseValue(chartBean.getData5().getE6()));
-        c.setData5(data5);
-        calcData5(chartBean.getData5(), data5, n1, n2, n3, n4, n5);
+		mHandler.sendEmptyMessage(0x03);
+	}
 
-        charts.add(0, c);
-        chartBean = c;
 
-        mHandler.sendEmptyMessage(0x03);
-    }
+	///////////////////////////////////////////////////////////////////////////
+	// 动画
+	///////////////////////////////////////////////////////////////////////////
+	FrameLayout parent;
+	ImageView image;
+	Animation rotation;
 
+	private void start() {
+//		Animation rotate = AnimationUtils.loadAnimation(getActivity(), R.anim.anim_rotation);
+//		image.startAnimation(rotate);
+	}
+
+	private void stop() {
+//		if (parent != null && parent.getVisibility() == View.VISIBLE) {
+//			parent.setVisibility(View.GONE);
+//		}
+	}
 }

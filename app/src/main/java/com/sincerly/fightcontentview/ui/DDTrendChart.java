@@ -67,8 +67,9 @@ public class DDTrendChart extends ATrendChart {
 	 * @param str       种类（大乐透或者双色球）
 	 * @param arrayList 数据
 	 */
-	public void updateData(String str, ArrayList<ChartBean> arrayList) {
+	public void updateData(String name,String str, ArrayList<ChartBean> arrayList) {
 		if (arrayList != null && arrayList.size() != 0) {
+			titles[0]=name;
 			if ("01".equals(str) || "50".equals(str)) {
 				this.mLotteryType = str;
 			} else {
@@ -146,9 +147,9 @@ public class DDTrendChart extends ATrendChart {
 		if (i != 0 && i2 != 0 && this.mTrendData != null) {
 			super.initChart(context, i, i2, f);
 			if (this.mTrendView != null) {
-//				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
-				this.mTrendView.setNowY((float) 0);
-				this.mTrendView.setNowX((float) 0);
+				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
+//				this.mTrendView.setNowY((float) 0);
+//				this.mTrendView.setNowX((float) 0);
 			}
 		}
 	}
@@ -589,7 +590,7 @@ public class DDTrendChart extends ATrendChart {
 		 */
 		this.mPaint.setStyle(Style.STROKE);
 		this.mPaint.setStrokeCap(Paint.Cap.ROUND);
-		this.mPaint.setStrokeWidth(10);
+		this.mPaint.setStrokeWidth(6);
 		this.mPaint.setColor(mCBallRed);//红色
 		beginRecording.drawPath(this.mPathPoint, this.mPaint);
 		this.mPaint.setColor(type1_3Color);//蓝色

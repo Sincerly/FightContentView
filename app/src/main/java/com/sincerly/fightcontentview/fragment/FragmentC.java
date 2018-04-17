@@ -10,6 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -56,10 +60,14 @@ public class FragmentC extends Fragment {
     private LottoTrendView mTrendView;
     private DDTrendChart mTrendChart;
     private final OkHttpClient client = new OkHttpClient();
+    private boolean isFirst=true;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_a, container, false);
+//        parent = view.findViewById(R.id.loadingView);
+//        image = view.findViewById(R.id.image);
+        start();
         initChart(view);
         getText();
         return view;
@@ -71,6 +79,13 @@ public class FragmentC extends Fragment {
         this.mTrendView.setChart(this.mTrendChart);
         this.mTrendChart.setShowYilou(true);
         this.mTrendChart.setDrawLine(true);
+        this.mTrendView.setFinish(new LottoTrendView.onFinish() {
+            @Override
+            public void end() {
+                Log.e("tag", "end");
+                stop();
+            }
+        });
     }
 
     private Handler mHandler = new Handler() {
@@ -78,21 +93,25 @@ public class FragmentC extends Fragment {
             super.handleMessage(paramMessage);
             switch (paramMessage.what) {
                 case 0x01:
-                    refresh();
-                    mHandler.sendEmptyMessageDelayed(0x01, 10000);
+                    if(getUserVisibleHint()){
+                        refresh();
+                    }else{
+                    }
+                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
                     break;
                 case 0x02:
                     ArrayList<ChartBean> c2 = new ArrayList<>();
                     c2.addAll((ArrayList) paramMessage.obj);
                     mTrendView.setNowX(0f);
                     mTrendView.setNowY(0f);
-                    mTrendChart.updateData("01", c2);
-                    mHandler.sendEmptyMessageDelayed(0x01, 60000);
+                    mTrendChart.updateData("天津时时彩","01", c2);
+                    isFirst=false;
+                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
                     break;
                 case 0x03:
                     mTrendView.setNowX(0f);
                     mTrendView.setNowY(0f);
-                    mTrendChart.updateData("01", (ArrayList<ChartBean>) charts);
+                    mTrendChart.updateData("天津时时彩","01", (ArrayList<ChartBean>) charts);
                     break;
                 default:
                     break;
@@ -102,50 +121,61 @@ public class FragmentC extends Fragment {
 
 
     private void refresh() {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection connection = null;
-                BufferedReader reader = null;
-                try {
-                    URL url = new URL("http://23.252.161.83:8666/tjssc/ajax?ajaxhandler=getawarddata&t=0.5901237616961141");
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setConnectTimeout(8000);
-                    connection.setReadTimeout(8000);
-                    connection.connect();
-                    InputStream in = connection.getInputStream();
-                    //下面对获取到的输入流进行读取
-                    reader = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-
-                    Type type = new TypeToken<ResponseBean3>() {
-                    }.getType();
-                    ResponseBean3 g = new Gson().fromJson(response.toString(), type);
-                    refershItem(g);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (connection != null) {
-                        connection.disconnect();
-                    }
-                }
-            }
-        }).start();
+//		Log.e("tag","FragmentC");
+        getText();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                HttpURLConnection connection = null;
+//                BufferedReader reader = null;
+//                try {
+//                    URL url = new URL("http://23.252.161.83:8666/tjssc/ajax?ajaxhandler=getawarddata&t=0.5901237616961141");
+//                    connection = (HttpURLConnection) url.openConnection();
+//                    connection.setRequestMethod("GET");
+//                    connection.setConnectTimeout(8000);
+//                    connection.setReadTimeout(8000);
+//                    connection.connect();
+//
+//                    InputStream in = connection.getInputStream();
+//                    //下面对获取到的输入流进行读取
+//                    reader = new BufferedReader(new InputStreamReader(in));
+//                    StringBuilder response = new StringBuilder();
+//                    String line;
+//                    while ((line = reader.readLine()) != null) {
+//                        response.append(line);
+//                    }
+//
+//                    Type type = new TypeToken<ResponseBean3>() {
+//                    }.getType();
+//                    ResponseBean3 g = new Gson().fromJson(response.toString(), type);
+//                    refershItem(g);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    if (reader != null) {
+//                        try {
+//                            reader.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                    if (connection != null) {
+//                        connection.disconnect();
+//                    }
+//                }
+//            }
+//        }).start();
 //        call.enqueue(new )
     }
+
+//    @Override
+//    public void setUserVisibleHint(boolean isVisibleToUser) {
+//        super.setUserVisibleHint(isVisibleToUser);
+//        Log.e("tag",isVisibleToUser+"C:");
+//        if(isVisibleToUser&&isFirst){
+//            getText();
+//        }
+//    }
 
     private void getText() {
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
@@ -165,9 +195,10 @@ public class FragmentC extends Fragment {
                     InputStream inputStream = is.byteStream();
 
                     File file = new File(AppConfig.PATH, "text3.txt");
-                    if (!file.exists()) {
-                        file.createNewFile();
+                    if (file.exists()) {
+                        file.delete();
                     }
+                    file.createNewFile();
                     FileOutputStream fos = new FileOutputStream(file);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     byte[] buffer = new byte[1024];
@@ -199,7 +230,7 @@ public class FragmentC extends Fragment {
      * 读取数据
      */
     private void parse() {
-        File file = new File(AppConfig.PATH, "text2.txt");
+        File file = new File(AppConfig.PATH, "text3.txt");
         sources.clear();
         BufferedReader reader = null;
         try {
@@ -234,7 +265,22 @@ public class FragmentC extends Fragment {
      * 正序排序
      */
     private void replace() {
-        parseToChartBean();
+        if (isFirst) {
+            parseToChartBean();
+        }else{
+            if(sources.size()>0){
+                DataSource s=sources.get(sources.size()-1);
+                String sLongNo=s.getLongNo();
+                String longNo=chartBean.getLongNo();
+                if(sLongNo!=null&&!sLongNo.equals(longNo)){//最新一条与当前期号不一样
+                    int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
+                    refershItem(sLongNo,n);
+                }else{
+                    int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
+                    refershItem(sLongNo,n);
+                }
+            }
+        }
     }
 
     /**
@@ -1183,33 +1229,21 @@ public class FragmentC extends Fragment {
      * awardState : false
      */
 
-    private void refershItem(ResponseBean3 bean) {
-        if (bean == null) {
-            return;
-        }
+    private void refershItem(String n,int[] number ) {
         if (charts == null) {
             return;
         }
         if (charts.size() < 0) {
             return;
         }
-        ResponseBean3.CurrentBean currentBean = bean.getCurrent();
-        if (currentBean.getAwardNumbers() == null) {
-            return;
-        }
-        String[] numbers = currentBean.getAwardNumbers().split(",");
-        if (numbers.length < 5) {
-            return;
-        }
-        int n1 = Integer.parseInt(numbers[0]);
-        int n2 = Integer.parseInt(numbers[1]);
-        int n3 = Integer.parseInt(numbers[2]);
-        int n4 = Integer.parseInt(numbers[3]);
-        int n5 = Integer.parseInt(numbers[4]);
-
         ChartBean c = new ChartBean();
-        c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
-        String no = currentBean.getPeriod();
+        int n1=number[0];
+        int n2=number[1];
+        int n3=number[2];
+        int n4=number[3];
+        int n5=number[4];
+        c.setNumber(n1 + "" + n2 + "" + n3+ "" + n4 + "" +n5 + "");
+        String no = n;
         if (!charts.get(0).getLongNo().equals(no)) {//与当前不符合
             return;
         }
@@ -1218,6 +1252,7 @@ public class FragmentC extends Fragment {
         } else {
             c.setNo("期号缺失");
         }
+        c.setLongNo(n);
         /**
          * 处理第一个数据
          */
@@ -1307,5 +1342,24 @@ public class FragmentC extends Fragment {
         chartBean = c;
 
         mHandler.sendEmptyMessage(0x03);
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // 动画
+    ///////////////////////////////////////////////////////////////////////////
+    FrameLayout parent;
+    ImageView image;
+
+    private void start() {
+//        Animation rotate = AnimationUtils.loadAnimation(getActivity(), R.anim.anim_rotation);
+//        image.startAnimation(rotate);
+    }
+
+    private void stop() {
+//        if (parent != null && parent.getVisibility() == View.VISIBLE) {
+//            parent.setVisibility(View.GONE);
+//        }
     }
 }

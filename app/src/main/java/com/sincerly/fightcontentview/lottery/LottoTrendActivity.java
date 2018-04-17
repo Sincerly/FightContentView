@@ -44,7 +44,7 @@ public class LottoTrendActivity extends Activity implements DDTrendChart.ISelect
     private Handler mHandler = new Handler() {
         public void handleMessage(Message paramMessage) {
             super.handleMessage(paramMessage);
-            LottoTrendActivity.this.mTrendChart.updateData("01", (ArrayList) paramMessage.obj);
+            LottoTrendActivity.this.mTrendChart.updateData("时时彩","01", (ArrayList) paramMessage.obj);
         }
     };
 

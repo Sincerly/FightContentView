@@ -21,4 +21,8 @@
     <dimen name="trend_sulcus_height">6dp</dimen>
     <dimen name="trend_sulcus_bottom">9dp</dimen>
     <dimen name="trend_time_height">26dp</dimen>
+
+    <dimen name="alert_width">290dp</dimen>
+    <dimen name="common_circle_width">3dp</dimen>
+    <dimen name="progress_circle_radius">34dp</dimen>
 </resources>

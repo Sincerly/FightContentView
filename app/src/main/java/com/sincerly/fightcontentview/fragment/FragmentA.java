@@ -111,7 +111,7 @@ public class FragmentA extends Fragment {
 					}
 //                    refresh();
 //                    refresh();
-					mHandler.sendEmptyMessageDelayed(0x01, 300000);
+					mHandler.sendEmptyMessageDelayed(0x01, 10000);
 					break;
 				case 0x02:
 					ArrayList<ChartBean> c2 = new ArrayList<>();
@@ -120,7 +120,7 @@ public class FragmentA extends Fragment {
 //					mTrendView.setNowY(0f);
 					mTrendChart.updateData("重庆时时彩", "01", c2);
 					isFirst = false;
-					mHandler.sendEmptyMessageDelayed(0x01, 300000);
+					mHandler.sendEmptyMessageDelayed(0x01, 100000);
 					break;
 				case 0x03:
 //					mTrendView.setNowX(0f);
@@ -228,7 +228,7 @@ public class FragmentA extends Fragment {
 	private List<DataSource> sources = new ArrayList<>();
 
 	/**
-	 * 读取数据  读取之后
+	 * 读取数据  读取之后 最新数据在最后一行
 	 */
 
 	private void parse() {
@@ -264,22 +264,22 @@ public class FragmentA extends Fragment {
 	}
 
 	/**
-	 * 正序排序   解析之后  最新数据在最底下
+	 * 正序排序  读取之后 最新数据在最后一行
 	 */
 	private void replace() {
 		if (isFirst) {
 			parseToChartBean();
 		} else {
 			if (sources.size() > 0) {
-				DataSource s = sources.get(sources.size() - 1);
+				DataSource s = sources.get(sources.size() - 1);//获取文件中最新一条
 				String sLongNo = s.getLongNo();
 				String longNo = chartBean.getLongNo();
 				if (sLongNo != null && !sLongNo.equals(longNo)) {//最新一条与当前期号不一样
 					int[] n = new int[]{s.getNum1(), s.getNum2(), s.getNum3(), s.getNum4(), s.getNum5()};
 					refershItem(sLongNo, n);
 				} else {
-					int[] n = new int[]{s.getNum1(), s.getNum2(), s.getNum3(), s.getNum4(), s.getNum5()};
-					refershItem(sLongNo, n);
+//					int[] n = new int[]{s.getNum1(), s.getNum2(), s.getNum3(), s.getNum4(), s.getNum5()};
+//					refershItem(sLongNo, n);
 				}
 			}
 		}
@@ -290,6 +290,9 @@ public class FragmentA extends Fragment {
 	 */
 	ChartBean chartBean = null;
 
+	/**
+	 * 计算2000条数据  未排序
+	 */
 	private void parseToChartBean() {
 		for (int i = 0; i < sources.size(); i++) {
 			DataSource item = sources.get(i);
@@ -444,13 +447,21 @@ public class FragmentA extends Fragment {
 
 
 		List<ChartBean> list = new ArrayList<>();
-		for (int i = charts.size() - 1; i >= 0; i--) {
-			ChartBean bean = charts.get(i);
-			list.add(bean);
+		//把数据重新排序  从新到旧
+//		for (int i = charts.size() - 1; i >= 0; i--) {
+//			ChartBean bean = charts.get(i);
+//			list.add(bean);
+//		}
+		for (int i = 0; i <charts.size() ; i++) {
+			if(i<500){
+				list.add(chartBean);
+			}
+			if(i==499){
+				chartBean=charts.get(i);
+			}
 		}
 		charts.clear();
 		charts.addAll(list);
-
 
 		mHandler.sendMessage(mHandler.obtainMessage(0x02, charts));
 	}
@@ -1245,7 +1256,7 @@ public class FragmentA extends Fragment {
 		int n5 = number[4];
 		c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
 		String no = n;
-		if (charts.get(0).getLongNo().equals(no)) {//与当前不符合
+		if (charts.get(charts.size()-1).getLongNo().equals(no)) {//与当前不符合
 			return;
 		}
 		if (no != null) {
@@ -1338,10 +1349,9 @@ public class FragmentA extends Fragment {
 		data5.setE6(parseValue(chartBean.getData5().getE6()));
 		c.setData5(data5);
 		calcData5(chartBean.getData5(), data5, n1, n2, n3, n4, n5);
-
-		charts.add(0, c);
-		chartBean = c;
-
+		charts.remove(0);//删除最旧一个
+		chartBean = charts.get(charts.size()-1);
+		charts.add(c);
 		mHandler.sendEmptyMessage(0x03);
 	}
 

@@ -111,22 +111,22 @@ public class FragmentA extends Fragment {
 					}
 //                    refresh();
 //                    refresh();
-					mHandler.sendEmptyMessageDelayed(0x01, 10000);
+					mHandler.sendEmptyMessageDelayed(0x01, 15000);
 					break;
 				case 0x02:
 					ArrayList<ChartBean> c2 = new ArrayList<>();
 					c2.addAll((ArrayList) paramMessage.obj);
-					mTrendView.setNowX(0.0f);
+					mTrendView.setNowX(0);
 //					mTrendView.setNowY(0.0f);
 					mTrendChart.updateData("重庆时时彩", "01", c2);
 					if (isFirst) {
 						//Log.e("tag", "发起10s");
 						isFirst = false;
-						mHandler.sendEmptyMessageDelayed(0x01, 10000);
+						mHandler.sendEmptyMessageDelayed(0x01, 15000);
 					}
 					break;
 				case 0x03:
-					mTrendView.setNowX(0.0f);
+					mTrendView.setNowX(0);
 //					mTrendView.setNowY(0.0f);
 					mTrendChart.updateData("重庆时时彩", "01", (ArrayList<ChartBean>) charts);
 					break;
@@ -242,8 +242,7 @@ public class FragmentA extends Fragment {
 				int index = 0;
 				for (int i = 0; i < sources.size(); i++) {
 					if (no.equals(sources.get(i).getLongNo())) {//数据源与当前视图数据源对比
-						index = i;
-//						1999 最新的
+						index = i;//1999 最新的
 					}
 				}
 				if (index != sources.size() - 1) {//不是最后一个
@@ -262,14 +261,15 @@ public class FragmentA extends Fragment {
 
 //					index=index+1;
 
-					for (int i = index; i < sources.size(); i++) {//index 最新的条数
-						chartBean = charts.get(charts.size() - 1);
-						DataSource q = sources.get(i);
-						int[] n = new int[]{q.getNum1(), q.getNum2(), q.getNum3(), q.getNum4(), q.getNum5()};
-						refershItem(q.getLongNo(), n);
-					}
-					Log.e("tag", "当前已最新 测试添加" + (sources.size() - index));
-					mHandler.sendEmptyMessage(0x03);
+//
+//					for (int i = index; i < sources.size(); i++) {//index 最新的条数
+//						chartBean = charts.get(charts.size() - 1);
+//						DataSource q = sources.get(i);
+//						int[] n = new int[]{q.getNum1(), q.getNum2(), q.getNum3(), q.getNum4(), q.getNum5()};
+//						refershItem(q.getLongNo(), n);
+//					}
+//					Log.e("tag", "当前已最新 测试添加" + (sources.size() - index));
+//					mHandler.sendEmptyMessage(0x03);
 				}
 			}
 		}

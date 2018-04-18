@@ -531,7 +531,10 @@ public class DDTrendChart extends ATrendChart {
 				}
 				beginRecording.drawRect(this.mRect, this.mPaint);
 				this.mPaint.setColor(this.mCDiv);
+				this.mPaint.setStyle(Style.STROKE);
+				this.mPaint.setStrokeWidth(1f);
 				beginRecording.drawLine(0.0f, (float) i4, (float) i2, (float) i4, this.mPaint);
+				this.mPaint.setStyle(Style.FILL);
 			}
 		}
 		int step = 0;
@@ -574,15 +577,15 @@ public class DDTrendChart extends ATrendChart {
 			} else {
 				this.mPaint.setColor(this.mCDiv);
 				if (step == 1) {//正在绘制第二个
-					beginRecording.drawLine((float) (i5 + this.mDivWidth), 0.0f, (float) (this.mDivWidth * 2 + i5), (float) size2, this.mPaint);
+					beginRecording.drawLine((float) (i5 + this.mDivWidth), 0.0f, (float) (this.mDivWidth  + i5), (float) size2, this.mPaint);
 				} else if (step == 2) {//正在绘制第三个
-					beginRecording.drawLine((float) (i5 + this.mDivWidth * 2), 0.0f, (float) (this.mDivWidth * 3 + i5), (float) size2, this.mPaint);
+					beginRecording.drawLine((float) (i5 + this.mDivWidth * 2), 0.0f, (float) (this.mDivWidth * 2 + i5), (float) size2, this.mPaint);
 				} else if (step == 3) {//正在绘制第四个
-					beginRecording.drawLine((float) (i5 + this.mDivWidth * 3), 0.0f, (float) (this.mDivWidth * 4 + i5), (float) size2, this.mPaint);
+					beginRecording.drawLine((float) (i5 + this.mDivWidth * 3), 0.0f, (float) (this.mDivWidth * 3 + i5), (float) size2, this.mPaint);
 				} else if (step == 4) {//正在绘制第五个
-					beginRecording.drawLine((float) (i5 + this.mDivWidth * 4), 0.0f, (float) (this.mDivWidth * 5 + i5), (float) size2, this.mPaint);
+					beginRecording.drawLine((float) (i5 + this.mDivWidth * 4), 0.0f, (float) (this.mDivWidth * 4+ i5), (float) size2, this.mPaint);
 				} else {//正在绘制第一个
-					beginRecording.drawLine((float) (i5), 0.0f, (float) (this.mDivWidth + i5), (float) size2, this.mPaint);
+					beginRecording.drawLine((float) (i5), 0.0f, (float)i5, (float) size2, this.mPaint);
 				}
 			}
 		}

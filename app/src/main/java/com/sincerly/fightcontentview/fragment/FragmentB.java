@@ -105,7 +105,7 @@ public class FragmentB extends Fragment {
 					}
 //                    refresh();
 //                    refresh();
-					mHandler.sendEmptyMessageDelayed(0x01, 10000);
+					mHandler.sendEmptyMessageDelayed(0x01, 15000);
 					break;
 				case 0x02:
 					ArrayList<ChartBean> c2 = new ArrayList<>();
@@ -116,7 +116,7 @@ public class FragmentB extends Fragment {
 					if (isFirst) {
 						//Log.e("tag", "发起10s");
 						isFirst = false;
-						mHandler.sendEmptyMessageDelayed(0x01, 10000);
+						mHandler.sendEmptyMessageDelayed(0x01, 15000);
 					}
 					break;
 				case 0x03:

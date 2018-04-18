@@ -27,6 +27,7 @@ import com.sincerly.fightcontentview.bean.ResponseBean3;
 import com.sincerly.fightcontentview.config.AppConfig;
 import com.sincerly.fightcontentview.ui.DDTrendChart;
 import com.sincerly.fightcontentview.ui.LottoTrendView;
+import com.sincerly.fightcontentview.ui.TDialog;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -60,16 +61,13 @@ public class FragmentC extends Fragment {
     private LottoTrendView mTrendView;
     private DDTrendChart mTrendChart;
     private final OkHttpClient client = new OkHttpClient();
-    private boolean isFirst=true;
+    private boolean isFirst = true;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_a, container, false);
-//        parent = view.findViewById(R.id.loadingView);
-//        image = view.findViewById(R.id.image);
         start();
         initChart(view);
-        getText();
         return view;
     }
 
@@ -82,7 +80,7 @@ public class FragmentC extends Fragment {
         this.mTrendView.setFinish(new LottoTrendView.onFinish() {
             @Override
             public void end() {
-                Log.e("tag", "end");
+                //Log.e("tag", "end");
                 stop();
             }
         });
@@ -93,25 +91,31 @@ public class FragmentC extends Fragment {
             super.handleMessage(paramMessage);
             switch (paramMessage.what) {
                 case 0x01:
-                    if(getUserVisibleHint()){
+                    if (getUserVisibleHint()) {
+                        //Log.e("tag", "收到10s");
                         refresh();
-                    }else{
+                    } else {
                     }
-                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
+//                    refresh();
+//                    refresh();
+                    mHandler.sendEmptyMessageDelayed(0x01, 10000);
                     break;
                 case 0x02:
                     ArrayList<ChartBean> c2 = new ArrayList<>();
                     c2.addAll((ArrayList) paramMessage.obj);
-                    mTrendView.setNowX(0f);
-                    mTrendView.setNowY(0f);
-                    mTrendChart.updateData("天津时时彩","01", c2);
-                    isFirst=false;
-                    mHandler.sendEmptyMessageDelayed(0x01, 300000);
+//					mTrendView.setNowX(0.0f);
+//					mTrendView.setNowY(0.0f);
+                    mTrendChart.updateData("天津时时彩", "01", c2);
+                    if (isFirst) {
+                        //Log.e("tag", "发起10s");
+                        isFirst = false;
+                        mHandler.sendEmptyMessageDelayed(0x01, 10000);
+                    }
                     break;
                 case 0x03:
-                    mTrendView.setNowX(0f);
-                    mTrendView.setNowY(0f);
-                    mTrendChart.updateData("天津时时彩","01", (ArrayList<ChartBean>) charts);
+//					mTrendView.setNowX(0.0f);
+//					mTrendView.setNowY(0.0f);
+                    mTrendChart.updateData("天津时时彩", "01", (ArrayList<ChartBean>) charts);
                     break;
                 default:
                     break;
@@ -119,63 +123,9 @@ public class FragmentC extends Fragment {
         }
     };
 
-
     private void refresh() {
-//		Log.e("tag","FragmentC");
         getText();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                HttpURLConnection connection = null;
-//                BufferedReader reader = null;
-//                try {
-//                    URL url = new URL("http://23.252.161.83:8666/tjssc/ajax?ajaxhandler=getawarddata&t=0.5901237616961141");
-//                    connection = (HttpURLConnection) url.openConnection();
-//                    connection.setRequestMethod("GET");
-//                    connection.setConnectTimeout(8000);
-//                    connection.setReadTimeout(8000);
-//                    connection.connect();
-//
-//                    InputStream in = connection.getInputStream();
-//                    //下面对获取到的输入流进行读取
-//                    reader = new BufferedReader(new InputStreamReader(in));
-//                    StringBuilder response = new StringBuilder();
-//                    String line;
-//                    while ((line = reader.readLine()) != null) {
-//                        response.append(line);
-//                    }
-//
-//                    Type type = new TypeToken<ResponseBean3>() {
-//                    }.getType();
-//                    ResponseBean3 g = new Gson().fromJson(response.toString(), type);
-//                    refershItem(g);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    if (reader != null) {
-//                        try {
-//                            reader.close();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    if (connection != null) {
-//                        connection.disconnect();
-//                    }
-//                }
-//            }
-//        }).start();
-//        call.enqueue(new )
     }
-
-//    @Override
-//    public void setUserVisibleHint(boolean isVisibleToUser) {
-//        super.setUserVisibleHint(isVisibleToUser);
-//        Log.e("tag",isVisibleToUser+"C:");
-//        if(isVisibleToUser&&isFirst){
-//            getText();
-//        }
-//    }
 
     private void getText() {
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
@@ -185,6 +135,7 @@ public class FragmentC extends Fragment {
         RetrofitApi retrofit = retrofitBuilder
                 .client(new OkHttpClient())
                 .build().create(RetrofitApi.class);
+
 
         retrofit2.Call<ResponseBody> call = retrofit.getText1("tjssc_2000.txt");
         call.enqueue(new retrofit2.Callback<ResponseBody>() {
@@ -213,13 +164,12 @@ public class FragmentC extends Fragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 parse();
             }
 
             @Override
             public void onFailure(retrofit2.Call<ResponseBody> call, Throwable t) {
-
+                stop();
             }
         });
     }
@@ -227,8 +177,9 @@ public class FragmentC extends Fragment {
     private List<DataSource> sources = new ArrayList<>();
 
     /**
-     * 读取数据
+     * 读取数据  读取之后 最新数据在最后一行
      */
+
     private void parse() {
         File file = new File(AppConfig.PATH, "text3.txt");
         sources.clear();
@@ -262,22 +213,49 @@ public class FragmentC extends Fragment {
     }
 
     /**
-     * 正序排序
+     * 正序排序  读取之后 最新数据在最后一行
      */
     private void replace() {
         if (isFirst) {
             parseToChartBean();
-        }else{
-            if(sources.size()>0){
-                DataSource s=sources.get(sources.size()-1);
-                String sLongNo=s.getLongNo();
-                String longNo=chartBean.getLongNo();
-                if(sLongNo!=null&&!sLongNo.equals(longNo)){//最新一条与当前期号不一样
-                    int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
-                    refershItem(sLongNo,n);
-                }else{
-                    int[] n=new int[]{s.getNum1(),s.getNum2(),s.getNum3(),s.getNum4(),s.getNum5()};
-                    refershItem(sLongNo,n);
+        } else {
+            if (sources.size() > 0) {
+                //获取文件中最新一条
+                DataSource s = sources.get(sources.size() - 1);
+                String sLongNo = s.getLongNo();
+                chartBean = charts.get(charts.size() - 1);//获取视图显示的最后一个对象
+                String no=chartBean.getLongNo();
+                //得到视图中最底部那个数据 在2000条数据中的位置
+                int index = 0;
+                for (int i = 0; i < sources.size(); i++) {
+                    if (no.equals(sources.get(i).getLongNo())) {//数据源与当前视图数据源对比
+                        index = i;
+//						1999 最新的
+                    }
+                }
+                if (index != sources.size() - 1) {//不是最后一个
+                    index = index + 1;
+                    for (int i = index; i < sources.size(); i++) {//最新的条数
+                        chartBean = charts.get(charts.size() - 1);//获取视图显示的最后一个对象
+                        DataSource q = sources.get(i);
+                        int[] n = new int[]{q.getNum1(), q.getNum2(), q.getNum3(), q.getNum4(), q.getNum5()};
+                        refershItem(q.getLongNo(), n);
+                    }
+                    //Log.e("tag", "当前有几条新数据" + (sources.size() - index));
+                    mHandler.sendEmptyMessage(0x03);
+                } else {
+                    //Log.e("tag", "当前已最新");
+
+//					index=index+1;
+
+//					for (int i = index; i < sources.size(); i++) {//index 最新的条数
+//						chartBean = charts.get(charts.size() - 1);
+//						DataSource q = sources.get(i);
+//						int[] n = new int[]{q.getNum1(), q.getNum2(), q.getNum3(), q.getNum4(), q.getNum5()};
+//						refershItem(sLongNo, n);
+//					}
+//					Log.e("tag", "当前已最新 测试添加" + (sources.size() - index));
+//					mHandler.sendEmptyMessage(0x03);
                 }
             }
         }
@@ -288,6 +266,9 @@ public class FragmentC extends Fragment {
      */
     ChartBean chartBean = null;
 
+    /**
+     * 计算2000条数据  未排序
+     */
     private void parseToChartBean() {
         for (int i = 0; i < sources.size(); i++) {
             DataSource item = sources.get(i);
@@ -302,10 +283,9 @@ public class FragmentC extends Fragment {
             if (no != null) {
                 c.setNo(no.substring(no.length() - 3, no.length()));//期号
             } else {
-                c.setNo("期号缺失");
+                c.setNo("缺失");
             }
             c.setLongNo(item.getLongNo());
-
             /**
              * 处理第一个数据
              */
@@ -443,15 +423,23 @@ public class FragmentC extends Fragment {
 
 
         List<ChartBean> list = new ArrayList<>();
-        for (int i = charts.size() - 1; i >= 0; i--) {
-            ChartBean bean = charts.get(i);
-            list.add(bean);
+        //把数据重新排序  从新到旧
+//		for (int i = charts.size() - 1; i >= 0; i--) {
+//			ChartBean bean = charts.get(i);
+//			list.add(bean);
+//		}
+        for (int i = 0; i < charts.size(); i++) {
+            if (i > 1499) {
+                list.add(charts.get(i));
+            }
+            if (i == 1499) {
+                chartBean = charts.get(i);
+            }
         }
         charts.clear();
         charts.addAll(list);
 
         mHandler.sendMessage(mHandler.obtainMessage(0x02, charts));
-
     }
 
 
@@ -1048,7 +1036,7 @@ public class FragmentC extends Fragment {
 
     private int parseValue(int params) {
         int c = 1;
-        if (c == -1) {
+        if (params == -1) {
             return c;
         }
         return ++params;
@@ -1134,7 +1122,7 @@ public class FragmentC extends Fragment {
 
     private int parseValue2(int params) {
         int c = 1;
-        if (c == -1) {
+        if (params == -1) {
             return c;
         }
         return ++params;
@@ -1223,30 +1211,32 @@ public class FragmentC extends Fragment {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * time : 2018-04-16 22:00:48
-     * current : {"periodNumber":77,"period":"2018041677","awardTime":"2018-04-16 21:50:00","awardNumbers":"9,6,6,4,8"}
-     * next : {"periodNumber":78,"period":"2018041678","awardTime":"2018-04-16 22:00:00","awardTimeInterval":-48000,"delayTimeInterval":15}
+     * time : 1523886999887
+     * current : {"periodNumber":95,"periodDate":"20180416095","awardTime":"2018-04-16 21:50:00","awardNumbers":"4,9,7,0,3"}
+     * next : {"periodNumber":96,"periodDate":"20180416096","awardTime":"2018-04-16 22:00:00","awardTimeInterval":200000,"delayTimeInterval":15}
      * awardState : false
      */
 
-    private void refershItem(String n,int[] number ) {
+    private void refershItem(String n, int[] number) {
         if (charts == null) {
             return;
         }
         if (charts.size() < 0) {
             return;
         }
+
         ChartBean c = new ChartBean();
-        int n1=number[0];
-        int n2=number[1];
-        int n3=number[2];
-        int n4=number[3];
-        int n5=number[4];
-        c.setNumber(n1 + "" + n2 + "" + n3+ "" + n4 + "" +n5 + "");
+        int n1 = number[0];
+        int n2 = number[1];
+        int n3 = number[2];
+        int n4 = number[3];
+        int n5 = number[4];
+        c.setNumber(n1 + "" + n2 + "" + n3 + "" + n4 + "" + n5 + "");
         String no = n;
-        if (!charts.get(0).getLongNo().equals(no)) {//与当前不符合
-            return;
-        }
+//		if (charts.get(charts.size()-1).getLongNo().equals(no)) {//与当前不符合
+//			Log.e("tag","号码已最新");
+//			return;
+//		}
         if (no != null) {
             c.setNo(no.substring(no.length() - 3, no.length()));//期号
         } else {
@@ -1337,13 +1327,10 @@ public class FragmentC extends Fragment {
         data5.setE6(parseValue(chartBean.getData5().getE6()));
         c.setData5(data5);
         calcData5(chartBean.getData5(), data5, n1, n2, n3, n4, n5);
-
-        charts.add(0, c);
-        chartBean = c;
-
-        mHandler.sendEmptyMessage(0x03);
+        charts.remove(0);//删除最旧一个
+        chartBean = charts.get(charts.size() - 1);
+        charts.add(c);
     }
-
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1351,15 +1338,43 @@ public class FragmentC extends Fragment {
     ///////////////////////////////////////////////////////////////////////////
     FrameLayout parent;
     ImageView image;
+    Animation rotation;
 
     private void start() {
-//        Animation rotate = AnimationUtils.loadAnimation(getActivity(), R.anim.anim_rotation);
-//        image.startAnimation(rotate);
+//		showNewDialog();
     }
 
     private void stop() {
-//        if (parent != null && parent.getVisibility() == View.VISIBLE) {
-//            parent.setVisibility(View.GONE);
-//        }
+//		if (parent != null && parent.getVisibility() == View.VISIBLE) {
+//			parent.setVisibility(View.GONE);
+//		}
+//		d2.dismiss();
+    }
+
+    private TDialog d2;
+
+    private void showNewDialog() {
+        d2 = new TDialog(getActivity());
+        d2.setCanceledOnTouchOutside(false);
+//		changeWindow(d2);
+        d2.show();
+    }
+
+//	@Override
+//	public void setUserVisibleHint(boolean isVisibleToUser) {
+//		super.setUserVisibleHint(isVisibleToUser);
+//		Log.e("tag",isVisibleToUser+"A:");
+//		if(isVisibleToUser&&isFirst){
+//			getText();
+//		}
+//	}
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        isFirst = true;
+        mHandler.removeMessages(0x01);
+        getText();
     }
 }
+

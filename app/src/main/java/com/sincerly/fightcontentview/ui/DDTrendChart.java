@@ -43,7 +43,7 @@ public class DDTrendChart extends ATrendChart {
 	private ArrayList<ChartBean> mTrendData;
 	private int redCount = 12;
 
-	private String[] titles = new String[]{"时时彩", "五星走势图", "五星组选形态", "0路号码个数", "1路号码个数", "2路号码个数"};
+	private String[] titles = new String[]{"新疆时时彩", "五星走势图", "五星组选形态", "0路号码个数", "1路号码个数", "2路号码个数"};
 	private String[] label1 = new String[]{"开奖期数", "号码"};
 	private String[] label2 = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};//五星走势图
 	private String[] label3 = new String[]{"组5", "组10", "组20", "组30", "组60", "组120"};//五星组选形态
@@ -67,9 +67,9 @@ public class DDTrendChart extends ATrendChart {
 	 * @param str       种类（大乐透或者双色球）
 	 * @param arrayList 数据
 	 */
-	public void updateData(String name,String str, ArrayList<ChartBean> arrayList) {
+	public void updateData(String name, String str, ArrayList<ChartBean> arrayList) {
 		if (arrayList != null && arrayList.size() != 0) {
-			titles[0]=name;
+			titles[0] = name;
 			if ("01".equals(str) || "50".equals(str)) {
 				this.mLotteryType = str;
 			} else {
@@ -150,6 +150,8 @@ public class DDTrendChart extends ATrendChart {
 				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
 //				this.mTrendView.setNowY((float) 0);
 //				this.mTrendView.setNowX((float) 0);
+//				this.mTrendView.setNowX(mPicY.getWidth());
+//				this.mTrendView.setNowY((float) (-this.mPicY.getHeight()));
 			}
 		}
 	}
@@ -229,7 +231,7 @@ public class DDTrendChart extends ATrendChart {
 	 */
 	public void drawY() {
 		Canvas beginRecording = mPicY.beginRecording(mYItemWidth * 2, (mYItemHeight * mTrendData.size()) + mDivHeight);
-		mPaint.setStyle(Paint.Style.FILL);
+		mPaint.setStyle(Style.FILL);
 
 		int size = mTrendData.size();
 		for (int i = 0; i < size; i++) {
@@ -511,7 +513,7 @@ public class DDTrendChart extends ATrendChart {
 	 */
 	public void drawContent() {
 		int i;
-		int i2 = (this.mXItemWidth * ( this.type1ColCount + type2ColCount + type3ColCount + type4ColCount + type5ColCount))+mDivWidth*4;
+		int i2 = (this.mXItemWidth * (this.type1ColCount + type2ColCount + type3ColCount + type4ColCount + type5ColCount)) + mDivWidth * 4;
 		Canvas beginRecording = this.mPicContent.beginRecording(i2, (this.mYItemHeight * this.mTrendData.size()) + this.mDivHeight);
 		this.mPaint.setTextSize((float) this.mCTextSize);
 		this.mPaint.setStyle(Style.FILL);
@@ -591,11 +593,14 @@ public class DDTrendChart extends ATrendChart {
 		this.mPaint.setStyle(Style.STROKE);
 		this.mPaint.setStrokeCap(Paint.Cap.ROUND);
 		this.mPaint.setStrokeWidth(6);
-		this.mPaint.setColor(mCBallRed);//红色
+		this.mPaint.setColor(Color.parseColor("#D51C2A"));//红色
+//		this.mPaint.setColor(mCBallRed);//红色
 		beginRecording.drawPath(this.mPathPoint, this.mPaint);
-		this.mPaint.setColor(type1_3Color);//蓝色
+//		this.mPaint.setColor(type1_3Color);//蓝色
+		this.mPaint.setColor(Color.parseColor("#0C65B4"));//蓝色
 		beginRecording.drawPath(this.mPath2Point, this.mPaint);
-		this.mPaint.setColor(type1_2Color);//绿色
+//		this.mPaint.setColor(type1_2Color);//绿色
+		this.mPaint.setColor(Color.parseColor("#187A1E"));//绿色
 		beginRecording.drawPath(this.mPath3Point, this.mPaint);
 		this.mPaint.setStyle(Style.FILL);
 		this.mPaint.setStrokeWidth(3);
@@ -607,6 +612,49 @@ public class DDTrendChart extends ATrendChart {
 		this.mPaint.setStyle(Style.FILL);
 		for (int p = 0; p < mTrendData.size(); p++) {
 			int height = p * mXItemHeight;
+
+			int zuType = 0;//判断当前组选形态   0 1 2 3 4 5   组5 组10 组20 组30  组60 组120
+			/**
+			 * 判断当前号码组选形态
+			 */
+			for (int q = 0; q < type2ColCount; q++) {
+				int q1 = 0;
+				if (q == 0) {
+					q1 = mTrendData.get(p).getData2().getB1();
+				}
+				if (q == 1) {
+					q1 = mTrendData.get(p).getData2().getB2();
+				}
+				if (q == 2) {
+					q1 = mTrendData.get(p).getData2().getB3();
+				}
+				if (q == 3) {
+					q1 = mTrendData.get(p).getData2().getB4();
+				}
+				if (q == 4) {
+					q1 = mTrendData.get(p).getData2().getB5();
+				}
+				if (q == 5) {
+					q1 = mTrendData.get(p).getData2().getB6();
+				}
+				if (q1 == -1) {
+					zuType = q;
+				}
+			}
+
+//			蓝色 #0C65B4
+//			绿色 #62B746
+//			红色 #D51C2A
+//			橙色 #F87707
+//			浅橙色#F0C71F
+
+//			组120  5个不一样             所有数字黑框
+//			组60   2个一样3个不一样      重复的为蓝色  其余为黑框
+//			组30   2个一样  1个不一样    重复为绿色  其余黑框
+//			组20   3个一样2个不一样      重复为浅橙色  其余黑框
+//			组10   3个一样2个一样        重复都为橙色
+//			组5    4个一样 +1            重复都为红色  其余黑框
+//			5个一样为黑色
 			/**
 			 * 五星走势图
 			 */
@@ -616,24 +664,30 @@ public class DDTrendChart extends ATrendChart {
 				int[] type = mTrendData.get(p).getData1().getType();
 				if (type[j] == 1) {
 					this.mPaint.setStyle(Style.STROKE);
+					this.mPaint.setStrokeWidth(6);
 					this.mPaint.setColor(this.type1_4Color);//   外圆色
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
+					this.mPaint.setStrokeWidth(3);
 					//beginRecording.drawArc(rectf, 0, 360, false, mPaint);
 				} else if (type[j] == 2) {
-					this.mPaint.setColor(this.type1_3Color);//蓝色
+//					this.mPaint.setColor(this.type1_3Color);//蓝色
+					setColor(zuType, false);
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(mCDiv);
 				} else if (type[j] == 3) {
-					this.mPaint.setColor(this.type1_1Color);//黄色
+					//this.mPaint.setColor(this.type1_1Color);//黄色
+					setColor(zuType, false);
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(mCDiv);
 
 				} else if (type[j] == 4) {
-					this.mPaint.setColor(this.mCBallRed);//红色
+					//this.mPaint.setColor(this.mCBallRed);//红色
+					setColor(zuType, false);
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(mCDiv);
 				} else if (type[j] == 5) {
-					this.mPaint.setColor(this.type1_2Color);//绿色
+					setColor(zuType, false);
+					//this.mPaint.setColor(this.type1_2Color);//绿色
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(mCDiv);
 				} else {
@@ -676,10 +730,10 @@ public class DDTrendChart extends ATrendChart {
 
 				if (a0 == -1) {
 					this.mPaint.setColor(-1);//设置透明色
-					if(type[j] == 1){//外圆字体颜色
+					if (type[j] == 1) {//外圆字体颜色
 						this.mPaint.setColor(mCYilou);
 						drawText2Rect(j + "", beginRecording, this.mRect, this.mPaint);
-					}else{
+					} else {
 						drawText2Rect(j + "", beginRecording, this.mRect, this.mPaint);
 					}
 				} else {
@@ -717,7 +771,8 @@ public class DDTrendChart extends ATrendChart {
 
 				String str = "";
 				if (b1 == -1) {
-					this.mPaint.setColor(this.mCBallBlue);
+//					this.mPaint.setColor(this.type1_3Color);
+					setColor(zuType, true);
 					beginRecording.drawRect(mRect, mPaint);
 					this.mPaint.setColor(-1);
 					str = getData2Type(h);
@@ -757,7 +812,8 @@ public class DDTrendChart extends ATrendChart {
 
 				String str = "";
 				if (c1 == -1) {//如果是当前选中  就变色
-					this.mPaint.setColor(mCBallRed);
+//					this.mPaint.setColor(mCBallRed);
+					this.mPaint.setColor(Color.parseColor("#D51C2A"));//红色
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(-1);
 					str = "" + k;
@@ -794,7 +850,8 @@ public class DDTrendChart extends ATrendChart {
 				}
 				String str = "";
 				if (d1 == -1) {//如果是当前选中  就变色
-					this.mPaint.setColor(this.type1_3Color);
+//					this.mPaint.setColor(this.type1_3Color);
+					this.mPaint.setColor(Color.parseColor("#0C65B4"));//蓝色
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(-1);
 					str = "" + k;
@@ -843,7 +900,8 @@ public class DDTrendChart extends ATrendChart {
 				}
 				String str = "";
 				if (e1 == -1) {//如果是当前选中  就变色
-					this.mPaint.setColor(this.type1_2Color);
+//					this.mPaint.setColor(this.type1_2Color);
+					this.mPaint.setColor(Color.parseColor("#187A1E"));//绿色
 					beginRecording.drawCircle(this.mRect.exactCenterX(), (float) this.mRect.centerY(), (float) this.mDefBallSize, this.mPaint);
 					this.mPaint.setColor(-1);
 					str = "" + k;
@@ -868,6 +926,58 @@ public class DDTrendChart extends ATrendChart {
 			}
 		}
 		this.mPicContent.endRecording();
+	}
+
+	/**
+	 * 根据组选形态设置画笔颜色  第一张图
+	 *
+	 * @param type 蓝色 #0C65B4
+	 *             绿色 #62B746
+	 *             红色 #D51C2A
+	 *             橙色 #F87707
+	 *             浅橙色#F0C71F
+	 *             组30浅绿色#62B746
+	 *             组120绿色    #187A1E
+	 */
+	//组5红色   组10橙色   组20浅橙色  组30浅绿色  组60蓝色   组120绿色
+	//	第一张图                         第二张图
+//	组120  5个不一样             所有数字黑框                       绿色
+//	组60   2个一样3个不一样      重复的为蓝色  其余为黑框           蓝色
+//	组30   2个一样  1个不一样    重复为浅绿色  其余黑框               浅绿色
+//	组20   3个一样2个不一样      重复为浅橙色  其余黑框             浅橙色
+//	组10   3个一样2个一样        重复都为橙色                       橙色
+//	组5    4个一样 +1            重复都为红色  其余黑框             红色
+//			     5个一样为黑色
+
+	/**
+	 * isGroup  false 为第一走势图  true为组选图
+	 *
+	 * @param type
+	 * @param isGroup
+	 */
+	private void setColor(int type, boolean isGroup) {
+		switch (type) {
+			case 0://组5
+				this.mPaint.setColor(Color.parseColor("#D51C2A"));//红色
+				break;
+			case 1://组10
+				this.mPaint.setColor(Color.parseColor("#F87707"));//橙色
+				break;
+			case 2://组20
+				this.mPaint.setColor(Color.parseColor("#F0C71F"));//浅橙色
+				break;
+			case 3://组30
+				this.mPaint.setColor(Color.parseColor("#62B746"));//浅绿色
+				break;
+			case 4://组60
+				this.mPaint.setColor(Color.parseColor("#0C65B4"));//蓝色
+				break;
+			case 5://组120
+				if (isGroup) {//第2张图
+					this.mPaint.setColor(Color.parseColor("#187A1E"));//绿色
+				}
+				break;
+		}
 	}
 
 	/**

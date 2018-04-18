@@ -60,7 +60,7 @@ public class TDialog extends Dialog {
 		WindowManager.LayoutParams params = window.getAttributes();
 		params.alpha = (float) 0.5;
 		window.setAttributes(params);
-		d.setOnDismissListener(new DialogInterface.OnDismissListener() {
+		d.setOnDismissListener(new OnDismissListener() {
 			@Override
 			public void onDismiss(DialogInterface dialog) {
 				WindowManager.LayoutParams params =getWindow().getAttributes();
